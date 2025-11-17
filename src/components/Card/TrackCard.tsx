@@ -10,20 +10,28 @@ type TrackCardProps = {
 };
 
 const TrackCard: React.FC<TrackCardProps> = ({ title, level, onPress }) => {
-  const Wrapper = onPress ? Pressable : View;
+  if (!onPress) {
+    return (
+      <View style={styles.card}>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.level}>Nível: {level}</Text>
+        <Text style={styles.hint}>Trilha disponível</Text>
+      </View>
+    );
+  }
 
   return (
-    <Wrapper
-      style={({ pressed }: { pressed: boolean }) => [
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
         styles.card,
-        pressed && onPress ? styles.cardPressed : null,
+        pressed ? styles.cardPressed : undefined,
       ]}
-      {...(onPress ? { onPress } : {})}
     >
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.level}>Nível: {level}</Text>
       <Text style={styles.hint}>Toque para ver detalhes</Text>
-    </Wrapper>
+    </Pressable>
   );
 };
 
@@ -33,9 +41,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: spacing.md,
     marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   cardPressed: {
-    backgroundColor: '#131833',
+    backgroundColor: '#111632',
   },
   title: {
     ...typography.titleM,

@@ -7,9 +7,9 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
-  Alert,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
 import TrackCard from '../../components/Card/TrackCard';
@@ -17,7 +17,6 @@ import AppButton from '../../components/Button/AppButton';
 import { tracksService } from '../../services/tracksService';
 import { useFetch } from '../../hooks/useFetch';
 import { Track } from '../../types/Track';
-import { useFocusEffect } from '@react-navigation/native';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Tracks'>;
 
@@ -29,7 +28,6 @@ const TracksScreen: React.FC<Props> = ({ navigation }) => {
     refetch,
   } = useFetch<Track[]>(() => tracksService.list(), []);
 
-  // refetch sempre que voltar para essa tela
   useFocusEffect(
     useCallback(() => {
       void refetch();
@@ -42,17 +40,6 @@ const TracksScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleCreateTrack = () => {
     navigation.navigate('TrackForm', {});
-  };
-
-  const handleRetry = () => {
-    void refetch();
-  };
-
-  const handleEmptyInfo = () => {
-    Alert.alert(
-      'Sem trilhas cadastradas',
-      'Você ainda não possui trilhas criadas. Clique em "Criar nova trilha" para cadastrar a primeira trilha da SkillBoost AI.',
-    );
   };
 
   const tracks = data ?? [];
@@ -69,7 +56,8 @@ const TracksScreen: React.FC<Props> = ({ navigation }) => {
       </View>
 
       <Text style={styles.subtitle}>
-        Trilhas de upskilling e reskilling alinhadas às demandas do futuro do trabalho.
+        Aqui você encontra trilhas criadas para reduzir gaps de habilidades,
+        apoiar realocação interna e desenvolver competências estratégicas.
       </Text>
 
       {loading && !tracks.length ? (
@@ -80,14 +68,17 @@ const TracksScreen: React.FC<Props> = ({ navigation }) => {
       ) : error ? (
         <View style={styles.centerContent}>
           <Text style={styles.errorText}>{error}</Text>
-          <AppButton label="Tentar novamente" onPress={handleRetry} />
+          <AppButton label="Tentar novamente" onPress={refetch} />
         </View>
       ) : tracks.length === 0 ? (
         <View style={styles.centerContent}>
           <Text style={styles.helperText}>
-            Nenhuma trilha cadastrada ainda.
+            Ainda não há trilhas cadastradas para este ambiente.
           </Text>
-          <AppButton label="Entendi" onPress={handleEmptyInfo} />
+          <Text style={styles.helperTextSecondary}>
+            Crie a primeira trilha da SkillBoost AI e comece a estruturar o
+            plano de desenvolvimento dos colaboradores.
+          </Text>
           <AppButton
             label="Criar primeira trilha"
             onPress={handleCreateTrack}
@@ -149,11 +140,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
+    gap: spacing.sm,
   },
   helperText: {
     ...typography.body,
     color: colors.textSecondary,
-    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+  helperTextSecondary: {
+    ...typography.caption,
+    color: colors.textSecondary,
     textAlign: 'center',
   },
   errorText: {

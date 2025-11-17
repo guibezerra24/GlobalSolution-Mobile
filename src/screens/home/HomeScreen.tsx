@@ -20,28 +20,34 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Olá, colaborador!</Text>
+      <Text style={styles.title}>Olá! Pronto para evoluir hoje?</Text>
+
       <Text style={styles.subtitle}>
-        Acompanhe suas trilhas de aprendizado e prepare-se para o futuro do
-        trabalho.
+        Acompanhe suas trilhas de aprendizado, identifique os próximos passos e
+        prepare-se para o futuro do trabalho com apoio da SkillBoost AI.
       </Text>
 
       <InfoCard
         title="Minha evolução"
-        description="Em breve você verá aqui o seu progresso nas trilhas de upskilling e reskilling."
+        description="Em breve você verá aqui indicadores como trilhas em andamento, horas dedicadas e competências em destaque."
+      />
+
+      <InfoCard
+        title="Sugestão do dia"
+        description="Reserve alguns minutos para avançar em uma trilha estratégica para o seu papel atual ou para a carreira que você deseja atingir."
       />
 
       <AppButton
-        label="Ver trilhas recomendadas"
+        label="Explorar trilhas"
         onPress={handleGoToTracks}
-        fullWidth={false}
+        fullWidth
       />
 
       <AppButton
-        label="Ver meu perfil"
+        label="Meu perfil"
         onPress={handleGoToProfile}
         variant="outline"
-        fullWidth={false}
+        fullWidth
         style={styles.secondaryButton}
       />
     </View>
@@ -54,19 +60,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
+    gap: spacing.sm,
   },
   title: {
     ...typography.titleXL,
     color: colors.textPrimary,
-    marginBottom: spacing.xs,
   },
   subtitle: {
     ...typography.body,
     color: colors.textSecondary,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.sm,
   },
   secondaryButton: {
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
   },
 });
 

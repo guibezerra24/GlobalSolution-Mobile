@@ -98,8 +98,8 @@ const TrackDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       Alert.alert(
         'Sucesso',
         newStatus === 'enrolled'
-          ? 'Você foi inscrito nesta trilha!'
-          : 'Inscrição cancelada.',
+          ? 'Você foi inscrito nesta trilha! Continue avançando para aumentar seu nível de empregabilidade.'
+          : 'Inscrição cancelada. Você pode se inscrever novamente quando quiser.',
       );
     } catch (err) {
       console.error(err);
@@ -130,6 +130,12 @@ const TrackDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{track.title}</Text>
+
+      <Text style={styles.contextText}>
+        Esta trilha faz parte da SkillBoost AI e foi pensada para desenvolver
+        habilidades essenciais para o futuro do trabalho na sua organização.
+      </Text>
+
       <Text style={styles.subtitle}>{track.description}</Text>
 
       <InfoCard
@@ -138,11 +144,14 @@ const TrackDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       />
 
       <InfoCard
-        title="Carga horária"
-        description={`${track.workloadHours ?? 0} horas`}
+        title="Carga horária estimada"
+        description={`${track.workloadHours ?? 0} horas totais`}
       />
 
-      <InfoCard title="Habilidades desenvolvidas" description={skills} />
+      <InfoCard
+        title="Habilidades trabalhadas"
+        description={skills}
+      />
 
       <InfoCard
         title="Status de inscrição"
@@ -154,7 +163,7 @@ const TrackDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           label={
             track.enrollmentStatus === 'enrolled'
               ? 'Cancelar inscrição'
-              : 'Inscrever-se na trilha'
+              : 'Inscrever-se nesta trilha'
           }
           onPress={handleEnroll}
           fullWidth
@@ -188,6 +197,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
+    gap: spacing.sm,
   },
   loadingContainer: {
     flex: 1,
@@ -203,15 +213,18 @@ const styles = StyleSheet.create({
   title: {
     ...typography.titleL,
     color: colors.textPrimary,
-    marginBottom: spacing.xs,
+  },
+  contextText: {
+    ...typography.body,
+    color: colors.textSecondary,
   },
   subtitle: {
     ...typography.body,
     color: colors.textSecondary,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   actionsRow: {
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
   },
 });
 

@@ -19,20 +19,26 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.logo}>SkillBoost AI</Text>
-      <Text style={styles.subtitle}>
-        Bem-vindo à sua jornada de upskilling e reskilling.
+
+      <Text style={styles.tagline}>
+        Plataforma inteligente de upskilling e reskilling.
       </Text>
 
       <Text style={styles.description}>
-        A plataforma que identifica gaps de competências, monta trilhas
-        personalizadas e te prepara para o futuro do trabalho.
+        Desenvolva novas habilidades com trilhas personalizadas, inteligência
+        artificial e dados que impulsionam sua carreira dentro da empresa.
       </Text>
 
       <AppButton
-        label="Entrar na plataforma"
+        label="Começar minha jornada"
         onPress={handleEnter}
-        fullWidth={false}
+        fullWidth
       />
+
+      <Text style={styles.helper}>
+        Ao acessar, você verá trilhas recomendadas, progresso nas competências
+        e oportunidades internas conectadas ao seu perfil.
+      </Text>
 
       <Text style={styles.footer}>Global Solution 2025 • FIAP</Text>
     </View>
@@ -51,9 +57,9 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '800',
     color: colors.textPrimary,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
-  subtitle: {
+  tagline: {
     ...typography.titleM,
     color: colors.primary,
     marginBottom: spacing.md,
@@ -61,8 +67,14 @@ const styles = StyleSheet.create({
   description: {
     ...typography.body,
     color: colors.textSecondary,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
     lineHeight: 20,
+  },
+  helper: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: spacing.md,
+    lineHeight: 16,
   },
   footer: {
     ...typography.caption,
