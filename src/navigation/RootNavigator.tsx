@@ -8,6 +8,7 @@ import LoginScreen from '../screens/login/LoginScreen';
 import HomeScreen from '../screens/home/HomeScreen';
 import TracksScreen from '../screens/Tracks/TracksScreen';
 import TrackDetailScreen from '../screens/trackdetail/TrackDetailScreen';
+import TrackFormScreen from '../screens/Tracks/TrackFormScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -42,6 +43,11 @@ const RootNavigator: React.FC = () => {
         name="TrackDetail"
         component={TrackDetailScreen}
         options={{ title: 'Detalhe da trilha' }}
+      />
+      <Stack.Screen
+        name="TrackForm"
+        component={TrackFormScreen}
+        options={{ title: 'Gerenciar trilha' }}
       />
       <Stack.Screen
         name="Profile"

@@ -7,5 +7,8 @@ export type RootStackParamList = {
   TrackDetail: {
     trackId: string;
   };
+  TrackForm: {
+    trackId?: string;
+  };
   Profile: undefined;
 };

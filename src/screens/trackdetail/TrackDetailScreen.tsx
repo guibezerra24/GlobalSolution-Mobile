@@ -1,33 +1,183 @@
 // src/screens/TrackDetail/TrackDetailScreen.tsx
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
 import InfoCard from '../../components/Card/InfoCard';
+import AppButton from '../../components/Button/AppButton';
+import { tracksService } from '../../services/tracksService';
+import { Track } from '../../types/Track';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'TrackDetail'>;
 
-const TrackDetailScreen: React.FC<Props> = ({ route }) => {
+const TrackDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { trackId } = route.params;
+
+  const [track, setTrack] = useState<Track | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [removing, setRemoving] = useState(false);
+
+  const loadTrack = async () => {
+    try {
+      setLoading(true);
+      const data = await tracksService.getById(trackId);
+      setTrack(data);
+    } catch (err) {
+      console.error(err);
+      Alert.alert(
+        'Erro',
+        'Não foi possível carregar os dados da trilha. Tente novamente.',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          },
+        ],
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadTrack();
+  }, [trackId]);
+
+  const handleEdit = () => {
+    navigation.navigate('TrackForm', { trackId });
+  };
+
+  const handleRemove = () => {
+    Alert.alert(
+      'Remover trilha',
+      'Tem certeza que deseja remover esta trilha? Essa ação não pode ser desfeita.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Remover',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setRemoving(true);
+              await tracksService.remove(trackId);
+              Alert.alert('Sucesso', 'Trilha removida com sucesso.', [
+                {
+                  text: 'OK',
+                  onPress: () => navigation.navigate('Tracks'),
+                },
+              ]);
+            } catch (err) {
+              console.error(err);
+              Alert.alert(
+                'Erro',
+                'Não foi possível remover a trilha. Tente novamente.',
+              );
+            } finally {
+              setRemoving(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleEnroll = async () => {
+    if (!track) return;
+
+    try {
+      const newStatus =
+        track.enrollmentStatus === 'enrolled' ? 'not_enrolled' : 'enrolled';
+
+      const updated = await tracksService.update(track.id, {
+        enrollmentStatus: newStatus,
+      });
+
+      setTrack(updated);
+
+      Alert.alert(
+        'Sucesso',
+        newStatus === 'enrolled'
+          ? 'Você foi inscrito nesta trilha!'
+          : 'Inscrição cancelada.',
+      );
+    } catch (err) {
+      console.error(err);
+      Alert.alert(
+        'Erro',
+        'Não foi possível atualizar o status de inscrição. Tente novamente.',
+      );
+    }
+  };
+
+  if (loading || !track) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Carregando trilha...</Text>
+      </View>
+    );
+  }
+
+  const skills = track.skills?.join(', ') || 'Não informado';
+  const statusLabel =
+    track.enrollmentStatus === 'enrolled'
+      ? 'Inscrito'
+      : track.enrollmentStatus === 'completed'
+      ? 'Concluída'
+      : 'Não inscrito';
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Detalhe da trilha</Text>
-      <Text style={styles.subtitle}>
-        Aqui teremos as informações completas da trilha selecionada, como carga
-        horária, competências desenvolvidas e plano de estudos.
-      </Text>
+      <Text style={styles.title}>{track.title}</Text>
+      <Text style={styles.subtitle}>{track.description}</Text>
 
       <InfoCard
-        title="ID da trilha selecionada"
-        description={trackId}
+        title="Nível da trilha"
+        description={String(track.level || 'Não informado')}
       />
 
-      <Text style={styles.placeholder}>
-        Na próxima etapa vamos conectar esta tela à API (MockAPI) para carregar
-        os dados reais da trilha e permitir a inscrição do colaborador.
-      </Text>
+      <InfoCard
+        title="Carga horária"
+        description={`${track.workloadHours ?? 0} horas`}
+      />
+
+      <InfoCard title="Habilidades desenvolvidas" description={skills} />
+
+      <InfoCard
+        title="Status de inscrição"
+        description={`${statusLabel} • Progresso: ${track.progress ?? 0}%`}
+      />
+
+      <View style={styles.actionsRow}>
+        <AppButton
+          label={
+            track.enrollmentStatus === 'enrolled'
+              ? 'Cancelar inscrição'
+              : 'Inscrever-se na trilha'
+          }
+          onPress={handleEnroll}
+          fullWidth
+        />
+      </View>
+
+      <View style={styles.actionsRow}>
+        <AppButton
+          label="Editar trilha"
+          onPress={handleEdit}
+          variant="outline"
+          fullWidth
+        />
+      </View>
+
+      <View style={styles.actionsRow}>
+        <AppButton
+          label={removing ? 'Removendo...' : 'Remover trilha'}
+          onPress={handleRemove}
+          variant="outline"
+          fullWidth
+        />
+      </View>
     </View>
   );
 };
@@ -39,6 +189,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
   },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    ...typography.body,
+    color: colors.textSecondary,
+    marginTop: spacing.sm,
+  },
   title: {
     ...typography.titleL,
     color: colors.textPrimary,
@@ -49,10 +210,8 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginBottom: spacing.md,
   },
-  placeholder: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginTop: spacing.md,
+  actionsRow: {
+    marginTop: spacing.sm,
   },
 });
 
