@@ -35,7 +35,6 @@ const LoginScreen: React.FC<Props> = () => {
     setSubmitting(true);
     try {
       await signIn(email.trim(), password);
-      
     } catch (err: any) {
       setErrorMessage(err.message || 'Não foi possível autenticar.');
     } finally {
@@ -90,12 +89,15 @@ const LoginScreen: React.FC<Props> = () => {
             label={submitting ? 'Entrando...' : 'Entrar'}
             onPress={handleLogin}
             fullWidth
+            loading={submitting}
+            disabled={submitting}
           />
         </View>
 
         <Text style={styles.helper}>
-          Dica: cadastre um usuário de teste no recurso <Text style={styles.helperHighlight}>/users</Text> do MockAPI
-          com nome, e-mail e senha para simular o colaborador.
+          Dica: cadastre um usuário de teste no recurso{' '}
+          <Text style={styles.helperHighlight}>/Users</Text> do MockAPI com
+          nome, e-mail e senha para simular o colaborador.
         </Text>
 
         <Text style={styles.footer}>Global Solution 2025 • FIAP</Text>

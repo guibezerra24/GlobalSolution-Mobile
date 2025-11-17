@@ -1,7 +1,15 @@
 // src/screens/TrackDetail/TrackDetailScreen.tsx
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+} from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
 import InfoCard from '../../components/Card/InfoCard';
@@ -28,12 +36,7 @@ const TrackDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       Alert.alert(
         'Erro',
         'Não foi possível carregar os dados da trilha. Tente novamente.',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ],
+        [{ text: 'OK', onPress: () => navigation.goBack() }],
       );
     } finally {
       setLoading(false);
@@ -62,10 +65,7 @@ const TrackDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               setRemoving(true);
               await tracksService.remove(trackId);
               Alert.alert('Sucesso', 'Trilha removida com sucesso.', [
-                {
-                  text: 'OK',
-                  onPress: () => navigation.navigate('Tracks'),
-                },
+                { text: 'OK', onPress: () => navigation.navigate('Tracks') },
               ]);
             } catch (err) {
               console.error(err);
@@ -112,10 +112,12 @@ const TrackDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   if (loading || !track) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Carregando trilha...</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Carregando trilha...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -128,73 +130,76 @@ const TrackDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       : 'Não inscrito';
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{track.title}</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.title}>{track.title}</Text>
 
-      <Text style={styles.contextText}>
-        Esta trilha faz parte da SkillBoost AI e foi pensada para desenvolver
-        habilidades essenciais para o futuro do trabalho na sua organização.
-      </Text>
+        <Text style={styles.contextText}>
+          Esta trilha faz parte da SkillBoost AI e foi pensada para desenvolver
+          habilidades essenciais para o futuro do trabalho na sua organização.
+        </Text>
 
-      <Text style={styles.subtitle}>{track.description}</Text>
+        <Text style={styles.subtitle}>{track.description}</Text>
 
-      <InfoCard
-        title="Nível da trilha"
-        description={String(track.level || 'Não informado')}
-      />
-
-      <InfoCard
-        title="Carga horária estimada"
-        description={`${track.workloadHours ?? 0} horas totais`}
-      />
-
-      <InfoCard
-        title="Habilidades trabalhadas"
-        description={skills}
-      />
-
-      <InfoCard
-        title="Status de inscrição"
-        description={`${statusLabel} • Progresso: ${track.progress ?? 0}%`}
-      />
-
-      <View style={styles.actionsRow}>
-        <AppButton
-          label={
-            track.enrollmentStatus === 'enrolled'
-              ? 'Cancelar inscrição'
-              : 'Inscrever-se nesta trilha'
-          }
-          onPress={handleEnroll}
-          fullWidth
+        <InfoCard
+          title="Nível da trilha"
+          description={String(track.level || 'Não informado')}
         />
-      </View>
 
-      <View style={styles.actionsRow}>
-        <AppButton
-          label="Editar trilha"
-          onPress={handleEdit}
-          variant="outline"
-          fullWidth
+        <InfoCard
+          title="Carga horária estimada"
+          description={`${track.workloadHours ?? 0} horas totais`}
         />
-      </View>
 
-      <View style={styles.actionsRow}>
-        <AppButton
-          label={removing ? 'Removendo...' : 'Remover trilha'}
-          onPress={handleRemove}
-          variant="outline"
-          fullWidth
+        <InfoCard title="Habilidades trabalhadas" description={skills} />
+
+        <InfoCard
+          title="Status de inscrição"
+          description={`${statusLabel} • Progresso: ${track.progress ?? 0}%`}
         />
-      </View>
-    </View>
+
+        <View style={styles.actionsRow}>
+          <AppButton
+            label={
+              track.enrollmentStatus === 'enrolled'
+                ? 'Cancelar inscrição'
+                : 'Inscrever-se nesta trilha'
+            }
+            onPress={handleEnroll}
+            fullWidth
+          />
+        </View>
+
+        <View style={styles.actionsRow}>
+          <AppButton
+            label="Editar trilha"
+            onPress={handleEdit}
+            variant="outline"
+            fullWidth
+          />
+        </View>
+
+        <View style={styles.actionsRow}>
+          <AppButton
+            label={removing ? 'Removendo...' : 'Remover trilha'}
+            onPress={handleRemove}
+            variant="outline"
+            fullWidth
+            loading={removing}
+            disabled={removing}
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  content: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
     gap: spacing.sm,

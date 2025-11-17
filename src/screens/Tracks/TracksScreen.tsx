@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
 import TrackCard from '../../components/Card/TrackCard';
@@ -21,12 +22,10 @@ import { Track } from '../../types/Track';
 type Props = NativeStackScreenProps<RootStackParamList, 'Tracks'>;
 
 const TracksScreen: React.FC<Props> = ({ navigation }) => {
-  const {
-    data,
-    loading,
-    error,
-    refetch,
-  } = useFetch<Track[]>(() => tracksService.list(), []);
+  const { data, loading, error, refetch } = useFetch<Track[]>(
+    () => tracksService.list(),
+    [],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -44,33 +43,27 @@ const TracksScreen: React.FC<Props> = ({ navigation }) => {
 
   const tracks = data ?? [];
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <Text style={styles.title}>Trilhas recomendadas</Text>
-        <AppButton
-          label="+ Nova"
-          onPress={handleCreateTrack}
-          variant="outline"
-        />
-      </View>
-
-      <Text style={styles.subtitle}>
-        Aqui você encontra trilhas criadas para reduzir gaps de habilidades,
-        apoiar realocação interna e desenvolver competências estratégicas.
-      </Text>
-
-      {loading && !tracks.length ? (
+  const renderContent = () => {
+    if (loading && !tracks.length) {
+      return (
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.helperText}>Carregando trilhas...</Text>
         </View>
-      ) : error ? (
+      );
+    }
+
+    if (error) {
+      return (
         <View style={styles.centerContent}>
           <Text style={styles.errorText}>{error}</Text>
           <AppButton label="Tentar novamente" onPress={refetch} />
         </View>
-      ) : tracks.length === 0 ? (
+      );
+    }
+
+    if (tracks.length === 0) {
+      return (
         <View style={styles.centerContent}>
           <Text style={styles.helperText}>
             Ainda não há trilhas cadastradas para este ambiente.
@@ -85,35 +78,62 @@ const TracksScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.mtSm}
           />
         </View>
-      ) : (
-        <FlatList
-          data={tracks}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl
-              refreshing={loading}
-              onRefresh={refetch}
-              tintColor={colors.primary}
-            />
-          }
-          renderItem={({ item }) => (
-            <TrackCard
-              title={item.title}
-              level={String(item.level)}
-              onPress={() => handleOpenTrack(item.id)}
-            />
-          )}
-        />
-      )}
-    </View>
+      );
+    }
+
+    return (
+      <FlatList
+        data={tracks}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={refetch}
+            tintColor={colors.primary}
+          />
+        }
+        renderItem={({ item }) => (
+          <TrackCard
+            title={item.title}
+            level={String(item.level)}
+            onPress={() => handleOpenTrack(item.id)}
+          />
+        )}
+      />
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.headerRow}>
+          <Text style={styles.title}>Trilhas recomendadas</Text>
+          <AppButton
+            label="+ Nova"
+            onPress={handleCreateTrack}
+            variant="outline"
+          />
+        </View>
+
+        <Text style={styles.subtitle}>
+          Aqui você encontra trilhas criadas para reduzir gaps de habilidades,
+          apoiar realocação interna e desenvolver competências estratégicas.
+        </Text>
+
+        {renderContent()}
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  container: {
+    flex: 1,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
   },
