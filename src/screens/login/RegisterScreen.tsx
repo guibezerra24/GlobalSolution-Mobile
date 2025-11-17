@@ -1,4 +1,4 @@
-// src/screens/Login/LoginScreen.tsx
+// src/screens/Login/RegisterScreen.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -7,43 +7,67 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from 'react-native';
-import { RootStackParamList } from '../../navigation/types';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
 import AppButton from '../../components/Button/AppButton';
+import { authService } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
-const LoginScreen: React.FC<Props> = ({ navigation }) => {
+const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const { signIn } = useAuth();
 
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleLogin = async () => {
+  const validate = (): boolean => {
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      setErrorMessage('Preencha todos os campos obrigatórios.');
+      return false;
+    }
+
+    if (password.length < 6) {
+      setErrorMessage('A senha deve ter pelo menos 6 caracteres.');
+      return false;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMessage('As senhas não coincidem.');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleRegister = async () => {
     setErrorMessage(null);
 
-    if (!email.trim() || !password.trim()) {
-      setErrorMessage('Preencha e-mail e senha para continuar.');
+    if (!validate()) {
       return;
     }
 
     setSubmitting(true);
     try {
+      await authService.register(name.trim(), email.trim(), password);
+      // Após registrar, faz login automático
       await signIn(email.trim(), password);
+      // RootNavigator cuida de mandar pra Home
     } catch (err: any) {
-      setErrorMessage(err.message || 'Não foi possível autenticar.');
+      setErrorMessage(
+        err?.message ||
+          'Não foi possível criar sua conta. Tente novamente mais tarde.',
+      );
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const handleGoToRegister = () => {
-    navigation.navigate('Register');
   };
 
   return (
@@ -51,19 +75,29 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.logo}>SkillBoost AI</Text>
 
-        <Text style={styles.tagline}>
-          Plataforma inteligente de upskilling e reskilling.
-        </Text>
+        <Text style={styles.tagline}>Criar conta de colaborador</Text>
 
         <Text style={styles.description}>
-          Acesse sua conta para visualizar trilhas personalizadas, acompanhar
+          Preencha seus dados para acessar trilhas personalizadas, acompanhar
           seu progresso e se preparar para o futuro do trabalho.
         </Text>
 
         <View style={styles.form}>
+          <Text style={styles.label}>Nome completo</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="ex: Guilherme Rezende"
+            placeholderTextColor={colors.textSecondary}
+            value={name}
+            onChangeText={setName}
+          />
+
           <Text style={styles.label}>E-mail corporativo</Text>
           <TextInput
             style={styles.input}
@@ -78,11 +112,21 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.label}>Senha</Text>
           <TextInput
             style={styles.input}
-            placeholder="Digite sua senha"
+            placeholder="Crie uma senha"
             placeholderTextColor={colors.textSecondary}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
+          />
+
+          <Text style={styles.label}>Confirme a senha</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Repita a senha"
+            placeholderTextColor={colors.textSecondary}
+            secureTextEntry
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
           />
 
           {errorMessage && (
@@ -90,8 +134,8 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           )}
 
           <AppButton
-            label={submitting ? 'Entrando...' : 'Entrar'}
-            onPress={handleLogin}
+            label={submitting ? 'Criando conta...' : 'Criar conta'}
+            onPress={handleRegister}
             fullWidth
             loading={submitting}
             disabled={submitting}
@@ -99,19 +143,15 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         <Text style={styles.footerText}>
-          Ainda não tem conta?{' '}
-          <Text style={styles.linkText} onPress={handleGoToRegister}>
-            Criar conta
+          Já tem uma conta?{' '}
+          <Text
+            style={styles.linkText}
+            onPress={() => navigation.replace('Login')}
+          >
+            Fazer login
           </Text>
         </Text>
-
-        <Text style={styles.helper}>
-          Dica: você também pode cadastrar usuários de teste diretamente no
-          recurso <Text style={styles.helperHighlight}>/Users</Text> do MockAPI.
-        </Text>
-
-        <Text style={styles.footer}>Global Solution 2025 • FIAP</Text>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
@@ -122,7 +162,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: colors.background,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
@@ -130,7 +170,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   logo: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '800',
     color: colors.textPrimary,
   },
@@ -168,24 +208,12 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textSecondary,
     textAlign: 'center',
+    marginTop: spacing.md,
   },
   linkText: {
     color: colors.primary,
     fontWeight: '600',
   },
-  helper: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    lineHeight: 16,
-  },
-  helperHighlight: {
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  footer: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
 });
 
-export default LoginScreen;
+export default RegisterScreen;

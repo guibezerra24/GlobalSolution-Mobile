@@ -7,6 +7,7 @@ import { colors, spacing, typography } from '../theme';
 import { useAuth } from '../context/AuthContext';
 
 import LoginScreen from '../screens/login/LoginScreen';
+import RegisterScreen from '../screens/login/RegisterScreen';
 import HomeScreen from '../screens/home/HomeScreen';
 import TracksScreen from '../screens/Tracks/TracksScreen';
 import TrackDetailScreen from '../screens/trackdetail/TrackDetailScreen';
@@ -67,11 +68,18 @@ const RootNavigator: React.FC = () => {
           />
         </>
       ) : (
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{ headerShown: false }}
-        />
+        <>
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Register"
+            component={RegisterScreen}
+            options={{ title: 'Criar conta' }}
+          />
+        </>
       )}
     </Stack.Navigator>
   );

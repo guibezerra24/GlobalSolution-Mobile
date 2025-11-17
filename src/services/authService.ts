@@ -4,7 +4,6 @@ import { User } from '../types/User';
 
 export const authService = {
   async login(email: string, password: string): Promise<User> {
-    // ATENÇÃO: "Users" com U maiúsculo, igual ao MockAPI
     const response = await api.get<User[]>('/Users', {
       params: { email },
     });
@@ -22,8 +21,29 @@ export const authService = {
     return user;
   },
 
+  async register(name: string, email: string, password: string): Promise<User> {
+   
+    const existing = await api.get<User[]>('/Users', {
+      params: { email },
+    });
+
+    if (existing.data.length > 0) {
+      throw new Error(
+        'Já existe um usuário cadastrado com esse e-mail. Tente fazer login.',
+      );
+    }
+
+    // 👇
+    const response = await api.post<User>('/users', {
+      name,
+      email,
+      password,
+    });
+
+    return response.data;
+  },
+
   async getUserById(id: string): Promise<User> {
-    // ATENÇÃO: "Users" com U maiúsculo aqui também
     const response = await api.get<User>(`/Users/${id}`);
     return response.data;
   },
