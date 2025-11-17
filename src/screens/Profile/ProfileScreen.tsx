@@ -3,6 +3,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
+import { colors, spacing, typography } from '../../theme';
+import InfoCard from '../../components/Card/InfoCard';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
 
@@ -11,61 +13,39 @@ const ProfileScreen: React.FC<Props> = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Meu perfil</Text>
       <Text style={styles.subtitle}>
-        Em breve você poderá acompanhar aqui seu progresso nas trilhas,
-        certificados conquistados e habilidades em desenvolvimento.
+        Acompanhe aqui seu progresso nas trilhas, certificados conquistados e
+        habilidades em desenvolvimento.
       </Text>
 
-      <View style={styles.card}>
-        <Text style={styles.cardLabel}>Nome do colaborador</Text>
-        <Text style={styles.cardValue}>Colaborador SkillBoost (demo)</Text>
-      </View>
+      <InfoCard
+        title="Nome do colaborador"
+        description="Colaborador SkillBoost (demo)"
+      />
 
-      <View style={styles.card}>
-        <Text style={styles.cardLabel}>Trilhas ativas</Text>
-        <Text style={styles.cardValue}>Em breve</Text>
-      </View>
+      <InfoCard
+        title="Trilhas ativas"
+        description="Em breve você verá aqui as trilhas em andamento."
+      />
     </View>
   );
 };
 
-const BACKGROUND_COLOR = '#050817';
-const TEXT_COLOR = '#FFFFFF';
-const MUTED_TEXT_COLOR = '#A1A5B7';
-const CARD_BACKGROUND = '#0B1022';
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BACKGROUND_COLOR,
-    paddingHorizontal: 24,
-    paddingVertical: 24,
+    backgroundColor: colors.background,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: TEXT_COLOR,
-    marginBottom: 8,
+    ...typography.titleL,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: 13,
-    color: MUTED_TEXT_COLOR,
-    marginBottom: 16,
-  },
-  card: {
-    backgroundColor: CARD_BACKGROUND,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-  },
-  cardLabel: {
-    fontSize: 12,
-    color: MUTED_TEXT_COLOR,
-    marginBottom: 4,
-  },
-  cardValue: {
-    fontSize: 14,
-    color: TEXT_COLOR,
-    fontWeight: '500',
+    ...typography.body,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
   },
 });
 

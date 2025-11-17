@@ -1,8 +1,11 @@
 // src/screens/Home/HomeScreen.tsx
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
+import { colors, spacing, typography } from '../../theme';
+import AppButton from '../../components/Button/AppButton';
+import InfoCard from '../../components/Card/InfoCard';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -23,89 +26,47 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         trabalho.
       </Text>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Minha evolução</Text>
-        <Text style={styles.cardText}>
-          Em breve você verá aqui o seu progresso nas trilhas de upskilling e
-          reskilling.
-        </Text>
-      </View>
+      <InfoCard
+        title="Minha evolução"
+        description="Em breve você verá aqui o seu progresso nas trilhas de upskilling e reskilling."
+      />
 
-      <Pressable style={styles.button} onPress={handleGoToTracks}>
-        <Text style={styles.buttonText}>Ver trilhas recomendadas</Text>
-      </Pressable>
+      <AppButton
+        label="Ver trilhas recomendadas"
+        onPress={handleGoToTracks}
+        fullWidth={false}
+      />
 
-      <Pressable style={styles.secondaryButton} onPress={handleGoToProfile}>
-        <Text style={styles.secondaryButtonText}>Ver meu perfil</Text>
-      </Pressable>
+      <AppButton
+        label="Ver meu perfil"
+        onPress={handleGoToProfile}
+        variant="outline"
+        fullWidth={false}
+        style={styles.secondaryButton}
+      />
     </View>
   );
 };
 
-const PRIMARY_COLOR = '#4C6FFF';
-const BACKGROUND_COLOR = '#050817';
-const TEXT_COLOR = '#FFFFFF';
-const MUTED_TEXT_COLOR = '#A1A5B7';
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BACKGROUND_COLOR,
-    paddingHorizontal: 24,
-    paddingVertical: 24,
+    backgroundColor: colors.background,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: TEXT_COLOR,
-    marginBottom: 8,
+    ...typography.titleXL,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: 14,
-    color: MUTED_TEXT_COLOR,
-    marginBottom: 24,
-  },
-  card: {
-    backgroundColor: '#0B1022',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 24,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: TEXT_COLOR,
-    marginBottom: 8,
-  },
-  cardText: {
-    fontSize: 13,
-    color: MUTED_TEXT_COLOR,
-  },
-  button: {
-    backgroundColor: PRIMARY_COLOR,
-    borderRadius: 999,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    marginBottom: 12,
-    alignSelf: 'flex-start',
-  },
-  buttonText: {
-    color: TEXT_COLOR,
-    fontWeight: '600',
-    fontSize: 15,
+    ...typography.body,
+    color: colors.textSecondary,
+    marginBottom: spacing.lg,
   },
   secondaryButton: {
-    borderRadius: 999,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: PRIMARY_COLOR,
-    alignSelf: 'flex-start',
-  },
-  secondaryButtonText: {
-    color: PRIMARY_COLOR,
-    fontWeight: '500',
-    fontSize: 14,
+    marginTop: spacing.sm,
   },
 });
 

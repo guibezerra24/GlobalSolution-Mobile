@@ -1,14 +1,10 @@
 // src/screens/Tracks/TracksScreen.tsx
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  Pressable,
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
+import { colors, spacing, typography } from '../../theme';
+import TrackCard from '../../components/Card/TrackCard';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Tracks'>;
 
@@ -42,66 +38,36 @@ const TracksScreen: React.FC<Props> = ({ navigation }) => {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
-          <Pressable
-            style={styles.card}
+          <TrackCard
+            title={item.title}
+            level={item.level}
             onPress={() => handleOpenTrack(item.id)}
-          >
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            <Text style={styles.cardLevel}>Nível: {item.level}</Text>
-            <Text style={styles.cardHint}>Toque para ver detalhes</Text>
-          </Pressable>
+          />
         )}
       />
     </View>
   );
 };
 
-const BACKGROUND_COLOR = '#050817';
-const TEXT_COLOR = '#FFFFFF';
-const MUTED_TEXT_COLOR = '#A1A5B7';
-const CARD_BACKGROUND = '#0B1022';
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BACKGROUND_COLOR,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    backgroundColor: colors.background,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: TEXT_COLOR,
-    marginBottom: 8,
+    ...typography.titleL,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: 13,
-    color: MUTED_TEXT_COLOR,
-    marginBottom: 16,
+    ...typography.body,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
   },
   listContent: {
-    paddingVertical: 8,
-  },
-  card: {
-    backgroundColor: CARD_BACKGROUND,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: TEXT_COLOR,
-    marginBottom: 4,
-  },
-  cardLevel: {
-    fontSize: 13,
-    color: MUTED_TEXT_COLOR,
-    marginBottom: 8,
-  },
-  cardHint: {
-    fontSize: 12,
-    color: MUTED_TEXT_COLOR,
+    paddingVertical: spacing.sm,
   },
 });
 

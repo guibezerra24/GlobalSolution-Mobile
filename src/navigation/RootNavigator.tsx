@@ -2,6 +2,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList } from './types';
+import { colors } from '../theme';
 
 import LoginScreen from '../screens/login/LoginScreen';
 import HomeScreen from '../screens/home/HomeScreen';
@@ -16,10 +17,10 @@ const RootNavigator: React.FC = () => {
     <Stack.Navigator
       initialRouteName="Login"
       screenOptions={{
-        headerStyle: { backgroundColor: '#050817' },
-        headerTintColor: '#FFFFFF',
+        headerStyle: { backgroundColor: colors.background },
+        headerTintColor: colors.textPrimary,
         headerTitleStyle: { fontWeight: '600' },
-        contentStyle: { backgroundColor: '#050817' },
+        contentStyle: { backgroundColor: colors.background },
       }}
     >
       <Stack.Screen
