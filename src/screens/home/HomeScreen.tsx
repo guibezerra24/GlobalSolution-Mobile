@@ -6,10 +6,14 @@ import { RootStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
 import AppButton from '../../components/Button/AppButton';
 import InfoCard from '../../components/Card/InfoCard';
+import { useAuth } from '../../context/AuthContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
+  const { user } = useAuth();
+  const firstName = user?.name?.split(' ')[0] ?? 'colaborador';
+
   const handleGoToTracks = () => {
     navigation.navigate('Tracks');
   };
@@ -20,7 +24,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Olá! Pronto para evoluir hoje?</Text>
+      <Text style={styles.title}>Olá, {firstName}! Pronto para evoluir hoje?</Text>
 
       <Text style={styles.subtitle}>
         Acompanhe suas trilhas de aprendizado, identifique os próximos passos e
@@ -69,7 +73,6 @@ const styles = StyleSheet.create({
   subtitle: {
     ...typography.body,
     color: colors.textSecondary,
-    marginBottom: spacing.sm,
   },
   secondaryButton: {
     marginTop: spacing.xs,

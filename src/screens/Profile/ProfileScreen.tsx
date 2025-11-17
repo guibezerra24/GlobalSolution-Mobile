@@ -1,14 +1,35 @@
 // src/screens/Profile/ProfileScreen.tsx
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
 import InfoCard from '../../components/Card/InfoCard';
+import AppButton from '../../components/Button/AppButton';
+import { useAuth } from '../../context/AuthContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
 
 const ProfileScreen: React.FC<Props> = () => {
+  const { user, signOut } = useAuth();
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Sair da conta',
+      'Tem certeza que deseja sair da SkillBoost AI neste dispositivo?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Sair',
+          style: 'destructive',
+          onPress: () => {
+            void signOut();
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Meu perfil</Text>
@@ -19,18 +40,27 @@ const ProfileScreen: React.FC<Props> = () => {
 
       <InfoCard
         title="Nome do colaborador"
-        description="Colaborador SkillBoost (demo)"
+        description={user?.name ?? 'Colaborador SkillBoost (demo)'}
       />
 
       <InfoCard
-        title="Trilhas ativas"
-        description="Em breve você verá aqui as trilhas em andamento, com progresso e status de conclusão."
+        title="E-mail"
+        description={user?.email ?? 'Não disponível'}
       />
 
       <InfoCard
         title="Foco atual"
         description="Desenvolver competências digitais, inovação e uso estratégico de IA no seu dia a dia."
       />
+
+      <View style={styles.logoutSection}>
+        <AppButton
+          label="Sair da conta"
+          onPress={handleLogout}
+          variant="outline"
+          fullWidth
+        />
+      </View>
     </View>
   );
 };
@@ -50,6 +80,9 @@ const styles = StyleSheet.create({
   subtitle: {
     ...typography.body,
     color: colors.textSecondary,
+  },
+  logoutSection: {
+    marginTop: spacing.lg,
   },
 });
 
