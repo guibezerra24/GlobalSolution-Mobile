@@ -10,61 +10,93 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebaseConfig';
 import { User } from '../types/User';
 
-console.log('FIREBASE OPTIONS', auth.app.options);
+const fallbackNameFromUser = (fbUser: FirebaseUser): string =>
+  fbUser.displayName ||
+  (fbUser.email ? fbUser.email.split('@')[0] : 'Colaborador SkillBoost');
 
-const mapFirebaseUser = async (fbUser: FirebaseUser): Promise<User> => {
+const mapFirebaseUser = async (
+  fbUser: FirebaseUser,
+  displayNameOverride?: string,
+): Promise<User> => {
   const userRef = doc(db, 'users', fbUser.uid);
-  const snapshot = await getDoc(userRef);
+
+  let snapshot: any = null;
+  try {
+    snapshot = await getDoc(userRef);
+  } catch (err) {
+    console.log('[authService] Erro ao buscar user no Firestore (ignorado)', err);
+  }
 
   let name =
-    snapshot.exists() && snapshot.data().name
-      ? (snapshot.data().name as string)
-      : fbUser.displayName ||
-        fbUser.email?.split('@')[0] ||
-        'Colaborador SkillBoost';
+    displayNameOverride ||
+    (snapshot && snapshot.exists() && snapshot.data().name) ||
+    fallbackNameFromUser(fbUser);
+
+  const email = fbUser.email ?? '';
 
   return {
     id: fbUser.uid,
     name,
-    email: fbUser.email ?? '',
+    email,
   };
 };
 
 export const authService = {
-  async login(email: string, password: string): Promise<User> {
+  // usado pelo AuthContext no onAuthStateChanged
+  mapFromFirebaseUser: (fbUser: FirebaseUser) => mapFirebaseUser(fbUser),
+
+  login: async (email: string, password: string): Promise<User> => {
     const credential = await signInWithEmailAndPassword(auth, email, password);
     const fbUser = credential.user;
-    return mapFirebaseUser(fbUser);
+
+    try {
+      return await mapFirebaseUser(fbUser);
+    } catch (err) {
+      console.log('[authService] Erro no mapFirebaseUser durante login, usando fallback', err);
+      return {
+        id: fbUser.uid,
+        name: fallbackNameFromUser(fbUser),
+        email: fbUser.email ?? '',
+      };
+    }
   },
 
-  async register(name: string, email: string, password: string): Promise<User> {
-    const credential = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password,
-    );
+  register: async (name: string, email: string, password: string): Promise<User> => {
+    const credential = await createUserWithEmailAndPassword(auth, email, password);
     const fbUser = credential.user;
 
-    if (auth.currentUser) {
-      await updateProfile(auth.currentUser, {
-        displayName: name,
-      });
+    // Atualiza displayName no Auth
+    try {
+      await updateProfile(fbUser, { displayName: name });
+    } catch (err) {
+      console.log('[authService] Erro ao atualizar displayName', err);
     }
 
-    const userRef = doc(db, 'users', fbUser.uid);
-    await setDoc(
-      userRef,
-      {
+    // Cria/atualiza documento no Firestore
+    try {
+      const userRef = doc(db, 'users', fbUser.uid);
+      await setDoc(
+        userRef,
+        { name, email },
+        { merge: true },
+      );
+    } catch (err) {
+      console.log('[authService] Erro ao salvar usuário no Firestore (ignorado)', err);
+    }
+
+    try {
+      return await mapFirebaseUser(fbUser, name);
+    } catch (err) {
+      console.log('[authService] Erro no mapFirebaseUser durante register, usando fallback', err);
+      return {
+        id: fbUser.uid,
         name,
         email,
-      },
-      { merge: true },
-    );
-
-    return mapFirebaseUser(fbUser);
+      };
+    }
   },
 
-  async logout(): Promise<void> {
+  logout: async (): Promise<void> => {
     await firebaseSignOut(auth);
   },
 };

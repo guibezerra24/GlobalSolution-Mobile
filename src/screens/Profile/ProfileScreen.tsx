@@ -1,6 +1,12 @@
 // src/screens/Profile/ProfileScreen.tsx
 import React from 'react';
-import { View, Text, StyleSheet, Alert, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Alert,
+  ScrollView,
+} from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../navigation/types';
@@ -12,7 +18,7 @@ import { useAuth } from '../../context/AuthContext';
 type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
 
 const ProfileScreen: React.FC<Props> = () => {
-  const { user, signOut } = useAuth();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
     Alert.alert(
@@ -24,7 +30,7 @@ const ProfileScreen: React.FC<Props> = () => {
           text: 'Sair',
           style: 'destructive',
           onPress: () => {
-            void signOut();
+            void logout();
           },
         },
       ],
@@ -32,31 +38,36 @@ const ProfileScreen: React.FC<Props> = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content}>
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Meu perfil</Text>
         <Text style={styles.subtitle}>
-          Acompanhe aqui suas trilhas, progresso, certificações e competências
-          em desenvolvimento ao longo da sua jornada com a SkillBoost AI.
+          Em breve você poderá acompanhar aqui seu progresso nas trilhas, certificados
+          conquistados e habilidades em desenvolvimento.
         </Text>
 
-        <InfoCard
-          title="Nome do colaborador"
-          description={user?.name ?? 'Colaborador SkillBoost (demo)'}
-        />
+        <View style={styles.section}>
+          <InfoCard
+            label="Nome do colaborador"
+            value={user?.name ?? 'Colaborador SkillBoost (demo)'}
+          />
 
-        <InfoCard title="E-mail" description={user?.email ?? 'Não disponível'} />
+          <InfoCard
+            label="E-mail"
+            value={user?.email ?? 'demo@skillboost.ai'}
+          />
 
-        <InfoCard
-          title="Foco atual"
-          description="Desenvolver competências digitais, inovação e uso estratégico de IA no seu dia a dia."
-        />
+          <InfoCard
+            label="Trilhas ativas"
+            value="Em breve"
+          />
+        </View>
 
-        <View style={styles.logoutSection}>
+        <View style={styles.footer}>
           <AppButton
             label="Sair da conta"
-            onPress={handleLogout}
             variant="outline"
+            onPress={handleLogout}
             fullWidth
           />
         </View>
@@ -66,14 +77,15 @@ const ProfileScreen: React.FC<Props> = () => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
+  safe: {
     flex: 1,
     backgroundColor: colors.background,
   },
-  content: {
+  container: {
+    flexGrow: 1,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   title: {
     ...typography.titleL,
@@ -83,7 +95,11 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textSecondary,
   },
-  logoutSection: {
+  section: {
+    marginTop: spacing.md,
+    gap: spacing.sm,
+  },
+  footer: {
     marginTop: spacing.lg,
   },
 });

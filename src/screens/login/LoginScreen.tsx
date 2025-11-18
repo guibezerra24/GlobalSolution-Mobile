@@ -7,9 +7,10 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from 'react-native';
-import { RootStackParamList } from '../../navigation/types';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
 import AppButton from '../../components/Button/AppButton';
 import { useAuth } from '../../context/AuthContext';
@@ -17,7 +18,7 @@ import { useAuth } from '../../context/AuthContext';
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
-  const { signIn } = useAuth();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,22 +29,41 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     setErrorMessage(null);
 
     if (!email.trim() || !password.trim()) {
-      setErrorMessage('Preencha e-mail e senha para continuar.');
+      setErrorMessage('Preencha e-mail e senha.');
       return;
     }
 
     setSubmitting(true);
+    console.log('[LoginScreen] Iniciando login...');
+
     try {
-      await signIn(email.trim(), password);
+      await login(email.trim(), password);
+      console.log('[LoginScreen] Login concluído com sucesso');
+
+      
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Home' }], 
+      });
     } catch (err: any) {
-      setErrorMessage(err.message || 'Não foi possível autenticar.');
+      console.log('[LoginScreen] Erro no login', err);
+
+      let message = 'Não foi possível entrar. Verifique seus dados.';
+      if (err?.code === 'auth/invalid-credential') {
+        message = 'E-mail ou senha inválidos.';
+      } else if (err?.code === 'auth/user-not-found') {
+        message = 'Usuário não encontrado. Crie uma conta primeiro.';
+      } else if (err?.code === 'auth/wrong-password') {
+        message = 'Senha incorreta. Tente novamente.';
+      } else if (typeof err?.message === 'string') {
+        message = err.message;
+      }
+
+      setErrorMessage(message);
     } finally {
       setSubmitting(false);
+      console.log('[LoginScreen] Finalizou fluxo de login');
     }
-  };
-
-  const handleGoToRegister = () => {
-    navigation.navigate('Register');
   };
 
   return (
@@ -51,23 +71,24 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.logo}>SkillBoost AI</Text>
 
-        <Text style={styles.tagline}>
-          Plataforma inteligente de upskilling e reskilling.
-        </Text>
+        <Text style={styles.tagline}>Plataforma inteligente de upskilling e reskilling.</Text>
 
         <Text style={styles.description}>
-          Acesse sua conta para visualizar trilhas personalizadas, acompanhar
-          seu progresso e se preparar para o futuro do trabalho.
+          Acesse sua conta para visualizar trilhas personalizadas, acompanhar seu progresso
+          e se preparar para o futuro do trabalho.
         </Text>
 
         <View style={styles.form}>
           <Text style={styles.label}>E-mail corporativo</Text>
           <TextInput
             style={styles.input}
-            placeholder="ex: voce@empresa.com"
+            placeholder="voce@empresa.com"
             placeholderTextColor={colors.textSecondary}
             autoCapitalize="none"
             keyboardType="email-address"
@@ -99,19 +120,15 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         <Text style={styles.footerText}>
-          Ainda não tem conta?{' '}
-          <Text style={styles.linkText} onPress={handleGoToRegister}>
+          Não tem conta ainda?{' '}
+          <Text
+            style={styles.linkText}
+            onPress={() => navigation.navigate('Register')}
+          >
             Criar conta
           </Text>
         </Text>
-
-        <Text style={styles.helper}>
-          Dica: você também pode cadastrar usuários de teste diretamente no
-          recurso <Text style={styles.helperHighlight}>/Users</Text> do MockAPI.
-        </Text>
-
-        <Text style={styles.footer}>Global Solution 2025 • FIAP</Text>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
@@ -122,7 +139,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: colors.background,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
@@ -130,7 +147,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   logo: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '800',
     color: colors.textPrimary,
   },
@@ -163,28 +180,17 @@ const styles = StyleSheet.create({
   errorText: {
     ...typography.caption,
     color: colors.danger,
+    marginTop: spacing.xs,
   },
   footerText: {
     ...typography.caption,
     color: colors.textSecondary,
     textAlign: 'center',
+    marginTop: spacing.md,
   },
   linkText: {
     color: colors.primary,
     fontWeight: '600',
-  },
-  helper: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    lineHeight: 16,
-  },
-  helperHighlight: {
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  footer: {
-    ...typography.caption,
-    color: colors.textSecondary,
   },
 });
 

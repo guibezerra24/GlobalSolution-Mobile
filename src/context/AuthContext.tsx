@@ -6,85 +6,100 @@ import React, {
   useState,
   ReactNode,
 } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { User } from '../types/User';
+import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { auth } from '../services/firebaseConfig';
 import { authService } from '../services/authService';
+import { User } from '../types/User';
 
 type AuthContextData = {
   user: User | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextData | undefined>(undefined);
 
-const STORAGE_KEY = '@skillboost:user';
-
-type AuthProviderProps = {
+type Props = {
   children: ReactNode;
 };
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<Props> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
-    const loadStoredUser = async () => {
-      try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const parsed: User = JSON.parse(stored);
-          setUser(parsed);
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser: FirebaseUser | null) => {
+      if (fbUser) {
+        try {
+          // mapeia usuário sem pedir senha
+          const mapped = await authService.mapFromFirebaseUser(fbUser);
+          setUser(mapped);
+        } catch (err) {
+          console.log('[AuthContext] Erro ao mapear usuário logado', err);
+          const fallbackName =
+            fbUser.displayName ||
+            (fbUser.email ? fbUser.email.split('@')[0] : 'Colaborador SkillBoost');
+          setUser({
+            id: fbUser.uid,
+            name: fallbackName,
+            email: fbUser.email ?? '',
+          });
         }
-      } catch (error) {
-        console.error('Erro ao carregar usuário salvo', error);
-      } finally {
-        setLoading(false);
+      } else {
+        setUser(null);
       }
-    };
+      setInitializing(false);
+    });
 
-    void loadStoredUser();
+    return unsubscribe;
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    const loggedUser = await authService.login(email, password);
-    setUser(loggedUser);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(loggedUser));
+  const login = async (email: string, password: string) => {
+    setLoading(true);
+    try {
+      const loggedUser = await authService.login(email, password);
+      setUser(loggedUser);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const register = async (name: string, email: string, password: string) => {
-    const newUser = await authService.register(name, email, password);
-    setUser(newUser);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
+    setLoading(true);
+    try {
+      const newUser = await authService.register(name, email, password);
+      setUser(newUser);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const signOut = async () => {
-    await authService.logout();
-    setUser(null);
-    await AsyncStorage.removeItem(STORAGE_KEY);
+  const logout = async () => {
+    setLoading(true);
+    try {
+      await authService.logout();
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (initializing) {
+    return null; // poderia ter um Splash
+  }
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        signIn,
-        register,
-        signOut,
-      }}
-    >
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = (): AuthContextData => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth deve ser usado dentro de AuthProvider');
+  return ctx;
 };

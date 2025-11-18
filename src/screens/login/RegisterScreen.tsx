@@ -28,7 +28,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const validate = (): boolean => {
-    if (!name.trim() || !email.trim() || !password.trim()) {
+    if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
       setErrorMessage('Preencha todos os campos obrigatórios.');
       return false;
     }
@@ -54,17 +54,36 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     setSubmitting(true);
+    console.log('[RegisterScreen] Iniciando cadastro...');
+
     try {
       await register(name.trim(), email.trim(), password);
-      // AuthContext já seta o user, RootNavigator manda pra Home
+      console.log('[RegisterScreen] Cadastro concluído com sucesso');
+
+      
+      navigation.reset({
+        index: 0,
+         routes: [{ name: 'Home' }],
+
+      });
     } catch (err: any) {
-      console.error(err);
-      setErrorMessage(
-        err?.message ||
-          'Não foi possível criar sua conta. Tente novamente mais tarde.',
-      );
+      console.log('[RegisterScreen] Erro no cadastro', err);
+      let message = 'Não foi possível criar sua conta. Tente novamente.';
+
+      if (err?.code === 'auth/email-already-in-use') {
+        message = 'Este e-mail já está em uso. Tente fazer login.';
+      } else if (err?.code === 'auth/invalid-email') {
+        message = 'E-mail inválido. Verifique o formato.';
+      } else if (err?.code === 'auth/weak-password') {
+        message = 'A senha é muito fraca. Use pelo menos 6 caracteres.';
+      } else if (typeof err?.message === 'string') {
+        message = err.message;
+      }
+
+      setErrorMessage(message);
     } finally {
       setSubmitting(false);
+      console.log('[RegisterScreen] Finalizou fluxo de cadastro');
     }
   };
 
@@ -82,8 +101,8 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={styles.tagline}>Criar conta de colaborador</Text>
 
         <Text style={styles.description}>
-          Preencha seus dados para acessar trilhas personalizadas, acompanhar
-          seu progresso e se preparar para o futuro do trabalho.
+          Preencha seus dados para acessar trilhas personalizadas, acompanhar seu
+          progresso e se preparar para o futuro do trabalho.
         </Text>
 
         <View style={styles.form}>
@@ -201,6 +220,7 @@ const styles = StyleSheet.create({
   errorText: {
     ...typography.caption,
     color: colors.danger,
+    marginTop: spacing.xs,
   },
   footerText: {
     ...typography.caption,
