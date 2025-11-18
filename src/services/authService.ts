@@ -1,50 +1,70 @@
 // src/services/authService.ts
-import api from './api';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  updateProfile,
+  User as FirebaseUser,
+} from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { auth, db } from './firebaseConfig';
 import { User } from '../types/User';
+
+console.log('FIREBASE OPTIONS', auth.app.options);
+
+const mapFirebaseUser = async (fbUser: FirebaseUser): Promise<User> => {
+  const userRef = doc(db, 'users', fbUser.uid);
+  const snapshot = await getDoc(userRef);
+
+  let name =
+    snapshot.exists() && snapshot.data().name
+      ? (snapshot.data().name as string)
+      : fbUser.displayName ||
+        fbUser.email?.split('@')[0] ||
+        'Colaborador SkillBoost';
+
+  return {
+    id: fbUser.uid,
+    name,
+    email: fbUser.email ?? '',
+  };
+};
 
 export const authService = {
   async login(email: string, password: string): Promise<User> {
-    const response = await api.get<User[]>('/Users', {
-      params: { email },
-    });
-
-    if (!response.data.length) {
-      throw new Error('Usuário não encontrado. Verifique o e-mail informado.');
-    }
-
-    const user = response.data[0];
-
-    if (user.password !== password) {
-      throw new Error('Senha incorreta. Tente novamente.');
-    }
-
-    return user;
+    const credential = await signInWithEmailAndPassword(auth, email, password);
+    const fbUser = credential.user;
+    return mapFirebaseUser(fbUser);
   },
 
   async register(name: string, email: string, password: string): Promise<User> {
-   
-    const existing = await api.get<User[]>('/Users', {
-      params: { email },
-    });
-
-    if (existing.data.length > 0) {
-      throw new Error(
-        'Já existe um usuário cadastrado com esse e-mail. Tente fazer login.',
-      );
-    }
-
-    // 👇
-    const response = await api.post<User>('/users', {
-      name,
+    const credential = await createUserWithEmailAndPassword(
+      auth,
       email,
       password,
-    });
+    );
+    const fbUser = credential.user;
 
-    return response.data;
+    if (auth.currentUser) {
+      await updateProfile(auth.currentUser, {
+        displayName: name,
+      });
+    }
+
+    const userRef = doc(db, 'users', fbUser.uid);
+    await setDoc(
+      userRef,
+      {
+        name,
+        email,
+      },
+      { merge: true },
+    );
+
+    return mapFirebaseUser(fbUser);
   },
 
-  async getUserById(id: string): Promise<User> {
-    const response = await api.get<User>(`/Users/${id}`);
-    return response.data;
+  async logout(): Promise<void> {
+    await firebaseSignOut(auth);
   },
 };

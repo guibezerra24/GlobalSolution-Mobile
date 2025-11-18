@@ -13,13 +13,12 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
 import AppButton from '../../components/Button/AppButton';
-import { authService } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
 const RegisterScreen: React.FC<Props> = ({ navigation }) => {
-  const { signIn } = useAuth();
+  const { register } = useAuth();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -56,11 +55,10 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
 
     setSubmitting(true);
     try {
-      await authService.register(name.trim(), email.trim(), password);
-      // Após registrar, faz login automático
-      await signIn(email.trim(), password);
-      // RootNavigator cuida de mandar pra Home
+      await register(name.trim(), email.trim(), password);
+      // AuthContext já seta o user, RootNavigator manda pra Home
     } catch (err: any) {
+      console.error(err);
       setErrorMessage(
         err?.message ||
           'Não foi possível criar sua conta. Tente novamente mais tarde.',
