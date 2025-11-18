@@ -67,15 +67,10 @@ export const AuthProvider: React.FC<Props> = ({ children }) => {
     }
   };
 
-  const register = async (name: string, email: string, password: string) => {
-    setLoading(true);
-    try {
-      const newUser = await authService.register(name, email, password);
-      setUser(newUser);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const register = async (name: string, email: string, password: string) => {
+    // 🔹 Só chama o serviço – NÃO dá setUser aqui
+    await authService.register(name, email, password);
+    };
 
   const logout = async () => {
     setLoading(true);

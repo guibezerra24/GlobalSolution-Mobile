@@ -1,4 +1,4 @@
-// src/screens/Login/RegisterScreen.tsx
+// src/screens/login/RegisterScreen.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
@@ -27,9 +28,9 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const validate = (): boolean => {
+  const validate = () => {
     if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
-      setErrorMessage('Preencha todos os campos obrigatórios.');
+      setErrorMessage('Preencha todos os campos.');
       return false;
     }
 
@@ -57,17 +58,29 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
     console.log('[RegisterScreen] Iniciando cadastro...');
 
     try {
+      // 🔹 Cria o usuário no Firebase (Auth + Firestore)
       await register(name.trim(), email.trim(), password);
+
       console.log('[RegisterScreen] Cadastro concluído com sucesso');
 
-      
-      navigation.reset({
-        index: 0,
-         routes: [{ name: 'Home' }],
-
-      });
+      // 🔹 Não loga automático
+      // 🔹 Mostra sucesso e volta pra tela de Login
+      Alert.alert(
+        'Conta criada com sucesso!',
+        'Agora faça login para acessar sua conta.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.navigate('Login');
+            },
+          },
+        ],
+        { cancelable: false },
+      );
     } catch (err: any) {
       console.log('[RegisterScreen] Erro no cadastro', err);
+
       let message = 'Não foi possível criar sua conta. Tente novamente.';
 
       if (err?.code === 'auth/email-already-in-use') {
@@ -89,27 +102,24 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.flex}
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
-      >
-        <Text style={styles.logo}>SkillBoost AI</Text>
-
-        <Text style={styles.tagline}>Criar conta de colaborador</Text>
-
-        <Text style={styles.description}>
-          Preencha seus dados para acessar trilhas personalizadas, acompanhar seu
-          progresso e se preparar para o futuro do trabalho.
-        </Text>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.title}>SkillBoost AI</Text>
+          <Text style={styles.subtitle}>Criar conta de colaborador</Text>
+          <Text style={styles.description}>
+            Preencha seus dados para acessar trilhas personalizadas, acompanhar
+            seu progresso e se preparar para o futuro do trabalho.
+          </Text>
+        </View>
 
         <View style={styles.form}>
           <Text style={styles.label}>Nome completo</Text>
           <TextInput
             style={styles.input}
-            placeholder="ex: Guilherme Rezende"
+            placeholder="Seu nome"
             placeholderTextColor={colors.textSecondary}
             value={name}
             onChangeText={setName}
@@ -118,22 +128,22 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.label}>E-mail corporativo</Text>
           <TextInput
             style={styles.input}
-            placeholder="ex: voce@empresa.com"
+            placeholder="seu.email@empresa.com"
             placeholderTextColor={colors.textSecondary}
-            autoCapitalize="none"
-            keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
           />
 
           <Text style={styles.label}>Senha</Text>
           <TextInput
             style={styles.input}
-            placeholder="Crie uma senha"
+            placeholder="Mínimo 6 caracteres"
             placeholderTextColor={colors.textSecondary}
-            secureTextEntry
             value={password}
             onChangeText={setPassword}
+            secureTextEntry
           />
 
           <Text style={styles.label}>Confirme a senha</Text>
@@ -141,94 +151,94 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.input}
             placeholder="Repita a senha"
             placeholderTextColor={colors.textSecondary}
-            secureTextEntry
             value={confirmPassword}
             onChangeText={setConfirmPassword}
+            secureTextEntry
           />
 
-          {errorMessage && (
-            <Text style={styles.errorText}>{errorMessage}</Text>
-          )}
+          {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
 
           <AppButton
             label={submitting ? 'Criando conta...' : 'Criar conta'}
             onPress={handleRegister}
-            fullWidth
-            loading={submitting}
             disabled={submitting}
+            loading={submitting}
+            fullWidth
           />
-        </View>
 
-        <Text style={styles.footerText}>
-          Já tem uma conta?{' '}
-          <Text
-            style={styles.linkText}
-            onPress={() => navigation.replace('Login')}
-          >
-            Fazer login
+          <Text style={styles.footerText}>
+            Já tem uma conta?{' '}
+            <Text
+              style={styles.footerLink}
+              onPress={() => navigation.replace('Login')}
+            >
+              Fazer login
+            </Text>
           </Text>
-        </Text>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  flex: {
+  container: {
     flex: 1,
     backgroundColor: colors.background,
   },
-  container: {
+  content: {
     flexGrow: 1,
-    backgroundColor: colors.background,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.lg,
-    justifyContent: 'center',
-    gap: spacing.md,
+    paddingVertical: spacing.xl,
   },
-  logo: {
-    fontSize: 28,
-    fontWeight: '800',
+  header: {
+    marginBottom: spacing.xl,
+  },
+  title: {
+    ...typography.heading1,
     color: colors.textPrimary,
   },
-  tagline: {
-    ...typography.titleM,
+  subtitle: {
+    ...typography.heading3,
     color: colors.primary,
+    marginTop: spacing.sm,
   },
   description: {
     ...typography.body,
     color: colors.textSecondary,
-    lineHeight: 20,
+    marginTop: spacing.sm,
   },
   form: {
-    marginTop: spacing.md,
-    gap: spacing.sm,
+    marginTop: spacing.lg,
   },
   label: {
     ...typography.caption,
     color: colors.textSecondary,
+    marginBottom: spacing.xs,
   },
   input: {
+    ...typography.body,
+    color: colors.textPrimary,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    color: colors.textPrimary,
+    marginBottom: spacing.md,
     backgroundColor: colors.surface,
   },
-  errorText: {
+  error: {
     ...typography.caption,
-    color: colors.danger,
-    marginTop: spacing.xs,
+    color: colors.error,
+    marginBottom: spacing.md,
   },
   footerText: {
-    ...typography.caption,
+    ...typography.body,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
   },
-  linkText: {
+  footerLink: {
     color: colors.primary,
     fontWeight: '600',
   },
