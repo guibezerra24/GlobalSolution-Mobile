@@ -1,28 +1,34 @@
-a inteligente de Upskilling e Reskilling desenvolvida para a Global Solution FIAP 2025, permitindo que colaboradores acompanhem trilhas de aprendizado, progresso e cursos recomendados.
+🧠 SkillBoost AI – Mobile App (React Native + Expo)
+
+Plataforma inteligente de Upskilling e Reskilling desenvolvida para a Global Solution FIAP 2025, ajudando colaboradores a evoluírem suas habilidades, acompanharem trilhas de aprendizado e conquistarem novos conhecimentos com suporte de IA.
 
 📱 Sobre o Projeto
 
-O SkillBoost AI Mobile é um aplicativo desenvolvido em React Native + Expo, integrado ao Firebase Authentication e Firestore, permitindo:
+O SkillBoost AI Mobile é um aplicativo desenvolvido em React Native + Expo, oferecendo uma experiência moderna, fluida e totalmente otimizada para dispositivos móveis.
 
-Autenticação segura de usuários
+Ele possibilita que colaboradores:
 
-Acesso à trilhas recomendadas
+Criem conta
 
-Visualização de detalhes das trilhas
+Façam login
 
-Progresso do colaborador
+Consultem trilhas recomendadas
 
-Perfil do usuário
+Acessam detalhes de cada trilha
 
-Design moderno, responsivo e otimizado para mobile
+Acompanhem progresso
 
-👨‍💻 Integrantes do Grupo
+Atualizem seu perfil
+
+Explore o futuro do trabalho com IA e automação
+
+👥 Integrantes do Grupo
 Nome	RM	Função
-Guilherme Rezende Bezerra	98508	Dev Mobile / Integrações Firebase
-Gustavo Brisqui	97969	Designer / Suporte Funcional
-Matheus Brisqui	97892	Arquitetura UI/UX / Documentação
+Guilherme Rezende Bezerra	98508	Dev Mobile / Firebase / Arquitetura
+Gustavo Brisqui	97969	UI/UX / Suporte técnico / Testes
+Matheus Brisqui	97892	Documentação / Layout / Conteúdo
 🚀 Tecnologias Utilizadas
-Frontend
+🧩 Frontend
 
 React Native
 
@@ -30,7 +36,7 @@ Expo
 
 TypeScript
 
-React Navigation
+Expo Router / React Navigation
 
 Context API
 
@@ -38,98 +44,83 @@ Axios
 
 AsyncStorage
 
-Hooks personalizados
+Componentes reutilizáveis + Design System
 
-Backend / Serviços
+☁️ Backend / Serviços
 
-Firebase Authentication
+Firebase Authentication (Login + Registro)
 
-Firebase Firestore
+Firebase Firestore (Dados persistentes do usuário)
 
-MockAPI para trilhas e cursos
+MockAPI (Trilhas, cursos, conteúdo dinâmico)
 
-🔐 Autenticação
+🧭 Fluxos do Aplicativo
+🔻 Visitante (sem login)
 
-O app utiliza Firebase Auth com Email/Senha.
-Recursos suportados:
+Tela de Login
 
-Registro de novos usuários
+Tela de Registro
 
-Login
+🔺 Colaborador autenticado
 
-Logout
+Home: visão geral
 
-Persistência de sessão com AsyncStorage
+Trilhas recomendadas: listagem completa
 
-Exemplo:
+Detalhe da trilha: conteúdo, workload, nível, skills
 
-const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage)
-});
+Perfil: informações do usuário, logout
+
+🧬 Principais Funcionalidades
+
+✔ Criar conta com Firebase Auth
+✔ Login validado
+✔ Logout com Context API
+✔ Listagem de trilhas via MockAPI
+✔ Visualização detalhada de trilha
+✔ Botão de inscrição/desinscrição
+✔ Perfil do colaborador
+✔ Persistência de sessão com AsyncStorage
+✔ Navegação completa com StackNavigator
+✔ Tratamento de erros e loads
+✔ UI organizada com tema próprio
 
 🗂 Estrutura de Pastas
 src/
  ├── components/
+ │    ├── Button/
+ │    ├── Card/
+ │    └── ...
  ├── context/
+ │    └── AuthContext.tsx
  ├── navigation/
+ │    ├── RootNavigator.tsx
+ │    └── types.ts
  ├── screens/
+ │    ├── home/
+ │    ├── login/
+ │    ├── Profile/
+ │    ├── Tracks/
+ │    └── trackdetail/
  ├── services/
+ │    ├── api.ts
+ │    ├── firebaseConfig.ts
+ │    └── tracksService.ts
  ├── theme/
+ │    ├── colors.ts
+ │    ├── spacing.ts
+ │    ├── typography.ts
+ │    └── index.ts
  └── utils/
-
-🧭 Fluxo de Navegação
-🔻 Visitante (não autenticado)
-
-Login
-
-Criar Conta
-
-🔺 Usuário autenticado
-
-Home
-
-Trilhas recomendadas
-
-Detalhe da trilha
-
-Perfil
-
-🧬 Principais Funcionalidades
-
-✔ Criar conta (Firebase Auth)
-✔ Login com validação
-✔ Logout
-✔ Listagem de trilhas do MockAPI
-✔ Detalhes da trilha com nível, skills e carga horária
-✔ Inscrição em trilhas
-✔ Perfil do colaborador
-✔ Loading global e tratamento de erros
-
-🔧 Instalação e Execução
-1. Clonar o repositório
-git clone https://github.com/guibezerra24/SkillBoostAI.Mobile.git
-cd SkillBoostAI.Mobile
-
-2. Instalar dependências
-npm install
-
-3. Instalar AsyncStorage (persistência)
-npm install @react-native-async-storage/async-storage
-
-4. Iniciar o app
-npx expo start -c
-
-
-Abra o app usando Expo Go no iOS ou Android.
 
 🔥 Configuração Firebase
 
-Crie:
+Crie o arquivo:
 
 src/services/firebaseConfig.ts
 
 
-Cole:
+Cole o seguinte (com suas chaves):
 
 import { initializeApp } from 'firebase/app';
 import {
@@ -144,7 +135,7 @@ const firebaseConfig = {
   authDomain: "SEU_AUTH_DOMAIN",
   projectId: "SEU_PROJECT_ID",
   storageBucket: "SEU_STORAGE_BUCKET",
-  messagingSenderId: "SEU_SENDER",
+  messagingSenderId: "SEU_SENDER_ID",
   appId: "SEU_APP_ID"
 };
 
@@ -156,14 +147,14 @@ export const auth = initializeAuth(app, {
 
 export const db = getFirestore(app);
 
-🌐 API de Trilhas (MockAPI)
+🌐 MockAPI – Trilhas e Cursos
 
-Endpoint:
+Base URL:
 
 https://SEU_PROJETO.mockapi.io/tracks
 
 
-Exemplo de trilha:
+Modelo:
 
 {
   "id": "1",
@@ -176,14 +167,56 @@ Exemplo de trilha:
   "progress": 0
 }
 
-👨‍🏫 Professores e Avaliação
+🔧 Instalação e Execução
+1️⃣ Clonar o repositório
+git clone https://github.com/guibezerra24/SkillBoostAI.Mobile.git
+cd SkillBoostAI.Mobile
 
-Projeto desenvolvido para entrega da Global Solution 2025 – FIAP, integrando práticas modernas de desenvolvimento mobile com Inteligência Artificial aplicada ao futuro do trabalho.
+2️⃣ Instalar dependências
+npm install
 
-⭐ Contribuições
+3️⃣ Instalar AsyncStorage
+npm install @react-native-async-storage/async-storage
 
-Pull Requests são bem-vindos!
+4️⃣ Rodar o app
+npx expo start -c
 
-📄 Licença
 
-Projeto acadêmico — uso livre apenas para fins educacionais.
+Use o Expo Go para abrir no celular.
+
+🧪 Comandos Git Úteis
+Ver estado
+git status
+
+Adicionar todas as mudanças
+git add .
+
+Criar commit
+git commit -m "mensagem do commit"
+
+Enviar para o GitHub
+git push origin main
+
+Baixar atualizações
+git pull origin main
+
+Criar nova branch
+git checkout -b nome-da-branch
+
+🏫 Sobre a entrega
+
+Projeto desenvolvido para a disciplina Global Solution FIAP 2025, integrando:
+
+Engenharia de Software
+
+Inteligência Artificial
+
+UX/UI
+
+Mobile Development
+
+Trabalho em equipe
+
+⭐ Licença
+
+Projeto acadêmico, livre para fins educacionais.
